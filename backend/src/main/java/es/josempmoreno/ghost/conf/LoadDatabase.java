@@ -1,12 +1,15 @@
 package es.josempmoreno.ghost.conf;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import es.josempmoreno.ghost.dto.Word;
-import es.josempmoreno.ghost.interfaces.WordRepository;
+import es.josempmoreno.ghost.repository.WordRepository;
 import lombok.extern.slf4j.Slf4j;
 
 @Configuration
@@ -23,38 +26,62 @@ import lombok.extern.slf4j.Slf4j;
 class LoadDatabase {
 
 	Logger log = LoggerFactory.getLogger(this.getClass());
-	static String DATABASE_FILE_LOCATION = "src/main/resources/db/ghost.mv.db";
-	static String DICTIONARY_FILE_LOCATION = "src/main/resources/static/ghostGameDict.txt";
+	static String RESOURCES_PATH = "src/main/resources";
+	static String DATABASE_FILE_PATH = RESOURCES_PATH + "/db/ghost.mv.db";
+	static String DICTIONARY_FILE_PATH = "static/ghostGameDict.txt";
+
+	WordRepository repository;
 
 	@Bean
 	CommandLineRunner initDatabase(WordRepository repository) {
-
+		this.repository = repository;
 		return args -> {
-
-			// check if exists the H2 database
-			if (!CheckExistsDatabase()) {
-				log.info("Generate the database");
-				// load file
-				List<String> dictionary = loadDictionary();
-				dictionary.forEach(s -> {
-					log.info("Save word: " + s + repository.save(new Word(s)));
-				});
-			} else {
-				log.info("The database was loaded successfully");
-			}
+			populateDatabase(repository);
 		};
 	}
 
-	private boolean CheckExistsDatabase() {
-		return Files.exists(Paths.get(DATABASE_FILE_LOCATION), LinkOption.NOFOLLOW_LINKS);
+	public void populateDatabase(WordRepository repository) {
+		// check if exists the H2 database
+		if (CheckExistsDatabaseIsEmpty()) {
+			log.info("Generate the database");
+			// load file
+			List<String> dictionary = loadDictionary();
+			dictionary.forEach(s -> {
+				log.trace("Save word: " + s + repository.save(new Word(s, s.length())));
+			});
+			log.info("The database was populated successfully");
+		} else {
+			log.info("The database was loaded successfully");
+		}
 	}
 
-	private List<String> loadDictionary() {
+	public boolean CheckExistsDatabaseIsEmpty() {
+		if (Files.exists(Paths.get(DATABASE_FILE_PATH), LinkOption.NOFOLLOW_LINKS)) {
+			log.info("The database exist");
+			log.info("Total words in the database : " + this.repository.count());
+			if (repository.count() > 0) {
+				return false;
+			} else {
+				return true;
+			}
+		} else {
+			log.info("the database not exist");
+			return true;
+		}
+	}
+
+	public List<String> loadDictionary() {
 		// read file into stream
-		try (Stream<String> stream = Files.lines(Paths.get(DICTIONARY_FILE_LOCATION))) {
-			return stream.collect(Collectors.toList());
-		} catch (IOException e) {
-			e.printStackTrace();
+		log.info("Load Dictionary");
+		
+		try (InputStream resource =  getClass().getClassLoader().getResourceAsStream(DICTIONARY_FILE_PATH)) {
+			  List<String> dictionary =
+			      new BufferedReader(new InputStreamReader(resource,
+			          StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
+			  return dictionary;
+			}
+		 catch (Exception e) {			
+			log.error("Dictionary not found");
 			return null;
 		}
 

@@ -13,36 +13,29 @@ public class Word {
 	private Long id;
 
 	private String value;
+	
+	private int length;
 
 	public Word() {
 		super();
 	}
 
-	public Word(Long id, String value) {
-		super();
-		this.id = id;
-		this.value = value;
-	}
-
-	public Word(String value) {
+	public Word(String value,int length) {
 		super();
 		this.value = value;
+		this.length = length;
 	}
 
 	public Long getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
-
 	public String getValue() {
 		return value;
 	}
 
-	public void setValue(String value) {
-		this.value = value;
+	public int getLength() {
+		return length;
 	}
 
 }

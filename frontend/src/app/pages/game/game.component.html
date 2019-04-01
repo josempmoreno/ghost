@@ -1,0 +1,77 @@
+
+<div  class="game">
+
+  <div class="container">
+      <div class="row">
+          <div class="col-3 rules">
+           <h3>Rules</h3>
+           <ul>
+             <li>Only lowercase letters</li>
+             <li>first who builds a more-than-3 letters word wins</li>
+            </ul>
+            <h5>Good Luck!</h5>
+          </div>
+          <div class="col-6" >
+              <div class="game-panel" *ngIf="!(userWin || cpuWin)">
+        
+                  <form #f="ngForm" action="">
+      
+                      <div class="form-group name-container">
+                      <h1>Insert letter</h1>
+                      <div 
+                      class="word"
+                      *ngIf="!notWordFounds">
+                            Word : {{word}}
+                        </div>
+                      
+                      <input 
+                        #name="ngModel"
+                        [(ngModel)]="letters.value"
+                        name="letters"
+                        type="text"
+                        class="form-control input-letter"        
+                        required
+                        maxlength="1"
+                        pattern="[a-z]{1}"
+                        >
+                     
+                    <button class="btn btn-dark"
+                    [disabled]="!f.valid"
+                    (click)="findNextLetter(letters);">send</button>
+                    </div>
+                  </form>
+              </div>
+
+              <div class="col result">
+                  <div *ngIf="cpuWin">
+                      <img width="300" alt="Ghost Logo" src="assets/img/cpu.png">
+                      <span class="text-win">
+                        <span>CPU win!!</span>
+                        <span *ngIf="!notWordFounds">with {{word}} 
+                           <span *ngIf="notWordFounds">not more word found </span>
+                        </span>
+                       
+                      </span>
+                  
+                  </div>
+                  <div *ngIf="userWin">
+                      <img width="300" alt="Ghost Logo" src="assets/img/user.png">
+                      <span class="text-win">
+                        user win with {{word}}
+                      </span>
+      
+                  </div> 
+                  
+                  
+                    <button class="btn btn-primary"
+                    (click)="backToHome()">
+                    <span *ngIf="userWin || cpuWin">back</span>
+                    <span *ngIf="!(userWin || cpuWin)">exit</span>
+                     </button>
+                 
+              </div>
+          </div>          
+        </div>
+  </div>
+</div>
+

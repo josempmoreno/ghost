@@ -3,6 +3,8 @@ HELP.md
 !.mvn/wrapper/maven-wrapper.jar
 /backend/target/
 /frontend/target/
+/frontend/node_modules
+
 ### STS ###
 .apt_generated
 .classpath
